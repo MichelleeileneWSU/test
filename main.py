@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 #Initialize the pygame
 pygame.init()
@@ -23,7 +24,7 @@ playerX_change = 0
 
 #enemy
 enemyImg = pygame.image.load('enemy.png')
-enemyX = random.randint(0, 800)
+enemyX = random.randint(0, 735)
 enemyY = random.randint(50, 150)
 enemyX_change = 0.3
 enemyY_change = 40
@@ -39,6 +40,8 @@ bulletX_change = 0
 bulletY_change = 10
 bullet_state = "ready"
 
+score = 0
+
 def player(x,y):
     screen.blit(playerImg, (x, y))
 
@@ -50,6 +53,12 @@ def fire_bullet(x,y):
     bullet_state = "fire"
     screen.blit(bulletImg, (x + 16,y + 10))
 
+def isCollision(enemyX, enemyY, bulletX, bulletY):
+    distance= math.sqrt((math.pow(enemyX-bulletX,2)) + (math.pow(enemyY - bulletY,2)))
+    if distance < 27:
+        return True
+    else:
+        return False
 # game loop
 running = True
 while running:
@@ -71,7 +80,9 @@ while running:
             if event.key == pygame.K_RIGHT:
                 playerX_change = 0.4
             if event.key == pygame.K_SPACE:
-                fire_bullet(playerX, bulletY)
+                if bullet_state is "ready":
+                    bulletX = playerX
+                    fire_bullet(bulletX, bulletY)
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -97,9 +108,23 @@ while running:
 
 
     #bullet movement
+    if bulletY <=0:
+        bulletY =480
+        bullet_state = "ready"
+
     if bullet_state is "fire":
-        fire_bullet (playerX, bulletY)
+        fire_bullet (bulletX, bulletY)
         bulletY -= bulletY_change
+
+    #collision
+    collision = isCollision(enemyX, enemyY, bulletX, bulletY)
+    if collision:
+        bulletY = 480
+        bullet_state = "ready"
+        score += 1
+        print(score)
+        enemyX = random.randint(0, 735)
+        enemyY = random.randint(50, 150)
 
     player(playerX, playerY)
     enemy(enemyX, enemyY)
